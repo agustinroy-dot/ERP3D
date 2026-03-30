@@ -1,0 +1,23 @@
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { env } from "@/lib/env";
+
+export async function supabaseServer() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          // Next.js will attach these to the response automatically in Route Handlers / Server Actions
+          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        }
+      }
+    }
+  );
+}

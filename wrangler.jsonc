@@ -2,10 +2,14 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "erp-3d-printing",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2024-03-29",
+  "compatibility_date": "2025-02-04",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "placeholder-hyperdrive-id" }
+    {
+      "binding": "HYPERDRIVE",
+      "id": "18c4087edd4049e6a7e08c29f8339f30",
+      "localConnectionString": "postgresql://postgres:postgres@localhost:5432/postgres"
+    }
   ]
 }

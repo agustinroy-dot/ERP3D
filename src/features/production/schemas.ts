@@ -9,12 +9,14 @@ export const createWorkOrderSchema = z.object({
   quantity: z.coerce.number().min(1, "Must be at least 1"),
   estimatedHours: z.coerce.number().min(0, "Must be at least 0"),
   technicalNotes: z.string().optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional().default("normal"),
 });
 
 export const updateWorkOrderStatusSchema = z.object({
   workOrderId: z.string().uuid(),
   status: z.enum(["pending", "assigned", "printing", "postprocess", "qc", "done", "paused", "failed"]),
   actualHours: z.coerce.number().min(0).optional(),
+  materialConsumed: z.coerce.number().min(0).optional(),
   failureReason: z.string().optional(),
   message: z.string().optional(), // For the event log
 });

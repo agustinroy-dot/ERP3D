@@ -6,6 +6,7 @@ import { materials } from "./inventory";
 
 export const quoteStatusEnum = pgEnum("quote_status", ["draft", "sent", "approved", "rejected", "expired"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "approved", "in_production", "qc", "ready_for_delivery", "delivered", "canceled"]);
+export const priorityEnum = pgEnum("priority", ["low", "normal", "high", "urgent"]);
 
 export const quotes = pgTable(
   "quotes",
@@ -69,7 +70,7 @@ export const orders = pgTable(
     quoteId: uuid("quote_id").references(() => quotes.id),
 
     status: orderStatusEnum("status").notNull().default("pending"),
-    priority: text("priority").notNull().default("normal"),
+    priority: priorityEnum("priority").notNull().default("normal"),
     promisedAt: timestamp("promised_at", { withTimezone: true }),
     notes: text("notes"),
 

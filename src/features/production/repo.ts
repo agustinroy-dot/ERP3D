@@ -18,6 +18,7 @@ export async function listWorkOrders(orgId: string) {
       quantity: workOrders.quantity,
       estimatedHours: workOrders.estimatedHours,
       actualHours: workOrders.actualHours,
+      priority: workOrders.priority,
       createdAt: workOrders.createdAt,
     })
     .from(workOrders)
@@ -40,6 +41,7 @@ export async function getWorkOrderDetail(orgId: string, workOrderId: string) {
       printerName: printers.name,
       operatorName: profiles.fullName,
       materialName: materials.name,
+      materialUnit: materials.unit,
     })
     .from(workOrders)
     .innerJoin(orders, eq(workOrders.orderId, orders.id))

@@ -33,6 +33,7 @@ export default function NewWorkOrderPage() {
       quantity: 1,
       estimatedHours: 0,
       technicalNotes: "",
+      priority: "normal",
     },
   });
 
@@ -172,19 +173,39 @@ export default function NewWorkOrderPage() {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="technicalNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Technical Notes</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Slice settings, specific orientation..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="technicalNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Technical Notes</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Slice settings, specific orientation..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <select {...field} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
 

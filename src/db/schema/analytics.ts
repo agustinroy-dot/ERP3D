@@ -14,6 +14,8 @@ export const activityEvents = pgTable(
     entityId: uuid("entity_id").notNull(),
 
     summary: text("summary").notNull(),
+    action: text("action"),
+    metadata: text("metadata"), // Storing stringified JSON
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },
   (t) => ({

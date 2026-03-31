@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 
+import { can, type Role } from "@/lib/auth/permissions";
+
 async function getContext() {
   const user = await requireUser();
   const db = getDb();
@@ -24,13 +26,15 @@ async function getContext() {
     where: eq(orgMemberships.userId, user.id)
   });
   if (!membership) throw new Error("NO_ORG_MEMBERSHIP");
-  return { orgId: membership.orgId };
+  return { orgId: membership.orgId, role: membership.role as Role };
 }
 
 export default async function CustomersPage() {
   let customers: InferSelectModel<typeof customersSchema>[] = [];
+  let canCreate = false;
   try {
-    const { orgId } = await getContext();
+    const { orgId, role } = await getContext();
+    canCreate = can(role, "crm:write");
     customers = await listCustomers(orgId);
   } catch (error) {
     // If no DB/org setup yet, show empty list to prevent crash
@@ -44,12 +48,14 @@ export default async function CustomersPage() {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Customers</h1>
           <p className="mt-1 text-sm text-zinc-600">Manage your company clients and individuals.</p>
         </div>
-        <Button asChild>
-          <Link href="/crm/customers/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Customer
-          </Link>
-        </Button>
+        {canCreate && (
+          <Button asChild>
+            <Link href="/crm/customers/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Customer
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">

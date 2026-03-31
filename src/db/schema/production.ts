@@ -4,7 +4,7 @@ import { orgs, profiles } from "./auth";
 import { orders } from "./sales";
 import { materials } from "./inventory";
 
-export const printerStatusEnum = pgEnum("printer_status", ["available", "in_use", "maintenance", "out_of_service"]);
+export const printerStatusEnum = pgEnum("printer_status", ["available", "in_use", "maintenance", "offline"]);
 export const workOrderStatusEnum = pgEnum("work_order_status", ["pending", "assigned", "printing", "postprocess", "qc", "done", "paused", "failed"]);
 
 export const printers = pgTable(
@@ -47,8 +47,10 @@ export const workOrders = pgTable(
     quantity: integer("quantity").notNull().default(1),
     estimatedHours: numeric("estimated_hours", { precision: 8, scale: 2 }).notNull().default("0"),
     actualHours: numeric("actual_hours", { precision: 8, scale: 2 }).notNull().default("0"),
+    materialConsumed: numeric("material_consumed", { precision: 14, scale: 3 }).notNull().default("0"),
 
     status: workOrderStatusEnum("status").notNull().default("pending"),
+    priority: text("priority").notNull().default("normal"), // Using text to match priorityEnum definition locally, actually we should use priorityEnum
     failureReason: text("failure_reason"),
     technicalNotes: text("technical_notes"),
 

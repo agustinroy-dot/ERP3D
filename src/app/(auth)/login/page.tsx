@@ -13,8 +13,8 @@ function LoginForm() {
   const search = useSearchParams();
   const redirect = search.get("redirect") ?? "/dashboard";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin");
+  const [password, setPassword] = useState("admin");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +22,11 @@ function LoginForm() {
     setPending(true);
     setError(null);
     const supabase = supabaseBrowser();
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    // Map the requested "admin" username to a valid Supabase email address
+    const loginEmail = email.trim() === "admin" ? "admin@example.com" : email;
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     setPending(false);
 
     if (error) return setError(error.message);
@@ -30,19 +34,19 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full rounded-2xl border border-white/30 bg-white/60 p-6 shadow-lg backdrop-blur-xl">
+    <div className="w-full rounded-2xl border border-white/30 bg-white/60 p-6 shadow-lg backdrop-blur-xl text-zinc-900">
       <h1 className="text-xl font-semibold">Sign in</h1>
       <p className="mt-1 text-sm text-zinc-600">Use your company credentials.</p>
 
       <div className="mt-6 space-y-3">
         <Input
-          className="bg-white/70"
+          className="bg-white/70 text-zinc-900 placeholder:text-zinc-500"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <Input
-          className="bg-white/70"
+          className="bg-white/70 text-zinc-900 placeholder:text-zinc-500"
           placeholder="Password"
           type="password"
           value={password}

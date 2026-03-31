@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { getCustomerById } from "@/features/crm/repo";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ customerId: string }> }) {
   const { customerId } = await params;
@@ -55,8 +56,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         </div>
 
         <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm">
-           <h2 className="text-lg font-semibold text-zinc-900 mb-4">Activity</h2>
-           <p className="text-sm text-zinc-500 italic">No recent activity.</p>
+           <h2 className="text-lg font-semibold text-zinc-900 mb-4">Activity History</h2>
+           <ActivityTimeline entityType="customer" entityId={customer.id} />
         </div>
       </div>
     </div>

@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { updateOrderStatusAction } from "@/features/orders/actions";
 import { RecordPaymentDialog } from "@/features/payments/components/record-payment-dialog";
 import { AttachmentsPanel } from "@/features/attachments/components/attachments-panel";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Truck } from "lucide-react";
 import { can, type Role } from "@/lib/auth/permissions";
+import { getOrderDelivery } from "@/features/deliveries/repo";
+import { CreateDeliveryDialog } from "@/features/deliveries/components/create-delivery-dialog";
+import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
@@ -32,6 +35,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
   const totalAmount = items.reduce((sum, item) => sum + (Number(item.unitPrice) * item.quantity), 0);
   const paidAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
   const remainingBalance = totalAmount - paidAmount;
+
+  const delivery = await getOrderDelivery(order.id);
 
   return (
     <div className="space-y-6">
@@ -57,6 +62,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
           {can(role, "production:write") && order.status === 'approved' && (
             <Button asChild>
               <a href={`/production/work-orders/new?orderId=${order.id}`}>Create Work Order</a>
+            </Button>
+          )}
+          {can(role, "deliveries:write") && !delivery && (
+            <CreateDeliveryDialog orderId={order.id} />
+          )}
+          {can(role, "deliveries:read") && delivery && (
+            <Button asChild variant="outline" className="text-zinc-700">
+              <a href={`/deliveries/${delivery.id}`}><Truck className="h-4 w-4 mr-2" /> View Delivery</a>
             </Button>
           )}
         </div>
@@ -183,6 +196,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
             <p className="text-sm text-zinc-600 whitespace-pre-wrap">{order.notes || "No additional notes provided."}</p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm max-w-3xl">
+        <h2 className="text-lg font-semibold text-zinc-900 mb-6">Activity History</h2>
+        <ActivityTimeline entityType="order" entityId={order.id} />
       </div>
     </div>
   );

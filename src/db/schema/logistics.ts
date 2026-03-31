@@ -2,7 +2,8 @@ import { pgEnum, pgTable, text, timestamp, uuid, index, numeric } from "drizzle-
 import { sql } from "drizzle-orm";
 import { orders } from "./sales";
 
-export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "scheduled", "dispatched", "delivered", "not_delivered"]);
+export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "coordinated", "dispatched", "delivered", "failed"]);
+export const deliveryTypeEnum = pgEnum("delivery_type", ["pickup", "shipping", "courier"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "partial", "paid", "overdue"]);
 
 export const deliveries = pgTable(
@@ -11,7 +12,7 @@ export const deliveries = pgTable(
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
     orderId: uuid("order_id").notNull().references(() => orders.id),
 
-    type: text("type").notNull(), // pickup/shipping/courier
+    type: deliveryTypeEnum("type").notNull(), // pickup/shipping/courier
     status: deliveryStatusEnum("status").notNull().default("pending"),
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),

@@ -8,6 +8,7 @@ import { WorkOrderStatusBadge } from "@/features/production/components/status-ba
 import { WorkOrderQuickActions } from "@/features/production/components/quick-actions";
 import Link from "next/link";
 import { UserCircle, Printer, Box, AlertTriangle, Clock } from "lucide-react";
+import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
 
 export default async function JobCardPage({ params }: { params: Promise<{ workOrderId: string }> }) {
   const { workOrderId } = await params;
@@ -21,7 +22,7 @@ export default async function JobCardPage({ params }: { params: Promise<{ workOr
   const detail = await getWorkOrderDetail(membership.orgId, workOrderId);
   if (!detail) notFound();
 
-  const { workOrder, orderNumber, printerName, operatorName, materialName, events } = detail;
+  const { workOrder, orderNumber, printerName, operatorName, materialName, materialUnit } = detail;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -33,6 +34,14 @@ export default async function JobCardPage({ params }: { params: Promise<{ workOr
               WO-{String(workOrder.workOrderNumber).padStart(6, '0')}
             </h1>
             <WorkOrderStatusBadge status={workOrder.status} />
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium uppercase ${
+              workOrder.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+              workOrder.priority === 'high' ? 'bg-amber-100 text-amber-800' :
+              workOrder.priority === 'low' ? 'bg-zinc-100 text-zinc-800' :
+              'bg-blue-100 text-blue-800'
+            }`}>
+              {workOrder.priority}
+            </span>
           </div>
           <p className="mt-2 text-sm text-zinc-600 flex items-center gap-2">
             <span>Linked to <Link href={`/orders/${workOrder.orderId}`} className="text-blue-600 hover:underline">Order #{String(orderNumber).padStart(6, '0')}</Link></span>
@@ -103,6 +112,17 @@ export default async function JobCardPage({ params }: { params: Promise<{ workOr
                   </div>
                 </div>
               </div>
+              <div className="flex items-start gap-3 col-span-2 border-t border-zinc-100 pt-4 mt-2">
+                <Box className="h-5 w-5 text-zinc-400 mt-0.5" />
+                <div className="w-full flex justify-between items-center pr-4">
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase">Material Consumed</p>
+                    <p className="font-medium text-zinc-900">
+                      {Number(workOrder.materialConsumed)} {materialUnit || 'units'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -141,30 +161,7 @@ export default async function JobCardPage({ params }: { params: Promise<{ workOr
           {/* G. Activity Timeline */}
           <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm">
             <h2 className="text-sm font-semibold text-zinc-900 mb-4">Activity Timeline</h2>
-            <div className="space-y-4">
-              {events.length === 0 ? (
-                <p className="text-xs text-zinc-500">No recorded events.</p>
-              ) : (
-                events.map((evt) => (
-                  <div key={evt.event.id} className="relative pl-6 pb-4 border-l border-zinc-200 last:border-0 last:pb-0">
-                    <div className={`absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-white ${
-                      evt.event.type === 'incident' ? 'bg-red-500' :
-                      evt.event.toStatus === 'done' ? 'bg-emerald-500' : 'bg-blue-500'
-                    }`}></div>
-                    <div className="text-xs text-zinc-500 mb-1">
-                      {new Date(evt.event.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                      {evt.actorName && <span className="ml-1 font-medium text-zinc-700">· {evt.actorName}</span>}
-                    </div>
-                    <p className="text-sm text-zinc-900 font-medium">{evt.event.message}</p>
-                    {evt.event.fromStatus && evt.event.toStatus && (
-                      <p className="text-xs text-zinc-500 mt-1 uppercase">
-                        {evt.event.fromStatus} → {evt.event.toStatus}
-                      </p>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+            <ActivityTimeline entityType="work_order" entityId={workOrder.id} />
           </div>
 
         </div>

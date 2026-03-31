@@ -71,7 +71,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ qu
               const order = await convertQuoteToOrderAction(quote.id);
               redirect(`/orders/${order.id}`);
             }}>
-              <Button type="submit">Convert to Order</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Convert to Order</Button>
             </form>
           )}
           <Button variant="outline" asChild>

@@ -40,8 +40,6 @@ export const getDb = cache(() => {
     });
   }
 
-  // Intercept drizzle queries to catch raw pg driver errors
-  // that Drizzle might swallow or obfuscate as "Failed query"
   try {
     return drizzle({ client: globalDb.dbPool, schema, logger: true });
   } catch (err) {

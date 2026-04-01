@@ -24,15 +24,14 @@ export const getDb = cache(() => {
       connectionString,
       // Keep pool size small for serverless environments.
       // Hyperdrive handles the actual pooling to Supabase.
-      max: 5,
-      // Avoid cross-request connection reuse issues in Workers
-      // by setting a short idle timeout if necessary, but maxUses: 1
-      // was causing constant reconnects and "Failed query" timeouts.
-      // Cloudflare/Hyperdrive tends to drop connections aggressively,
-      // so we use a relatively low idle timeout.
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 10000,
+      max: 1, // Minimize concurrent connection hangs in isolated worker
+      // Avoid cross-request connection reuse issues in Workers.
+      // Cloudflare/Hyperdrive tends to drop connections aggressively.
+      idleTimeoutMillis: 5000,
+      connectionTimeoutMillis: 5000,
+      query_timeout: 5000, // Force an error if a query hangs instead of stalling the event loop
       allowExitOnIdle: true,
+      maxUses: 1, // Do not reuse connections across requests, this often causes silent drops in Workers TCP
     });
 
     globalDb.dbPool.on("error", (err) => {

@@ -28,8 +28,24 @@ export const getDb = cache(() => {
       // Avoid cross-request connection reuse issues in Workers
       // by setting a short idle timeout if necessary, but maxUses: 1
       // was causing constant reconnects and "Failed query" timeouts.
+      // Cloudflare/Hyperdrive tends to drop connections aggressively,
+      // so we use a relatively low idle timeout.
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 10000,
+      allowExitOnIdle: true,
+    });
+
+    globalDb.dbPool.on("error", (err) => {
+      console.error("🔥 Postgres Pool Error (Hyperdrive connection failed):", err.message, err.stack);
     });
   }
 
-  return drizzle({ client: globalDb.dbPool, schema, logger: true });
+  // Intercept drizzle queries to catch raw pg driver errors
+  // that Drizzle might swallow or obfuscate as "Failed query"
+  try {
+    return drizzle({ client: globalDb.dbPool, schema, logger: true });
+  } catch (err) {
+    console.error("🔥 Drizzle initialization or pg connection error:", err);
+    throw err;
+  }
 });

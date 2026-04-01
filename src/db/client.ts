@@ -41,20 +41,24 @@ export const getDb = cache(() => {
 
     // Monkey-patch the query method to log the exact pg error before Drizzle hides it
     const originalQuery = globalDb.dbPool.query.bind(globalDb.dbPool);
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     globalDb.dbPool.query = async (...args) => {
       try {
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         return await originalQuery(...args);
-      } catch (err: any) {
+      } catch (unknownErr) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const err = unknownErr as any;
         console.error("🔥 RAW PG ERROR DETAILS 🔥");
-        console.error("Message:", err.message);
-        console.error("Code:", err.code);
-        console.error("Detail:", err.detail);
-        console.error("Hint:", err.hint);
-        console.error("Position:", err.position);
-        console.error("Internal Query:", err.internalQuery);
-        console.error("Where:", err.where);
+        console.error("Message:", err?.message);
+        console.error("Code:", err?.code);
+        console.error("Detail:", err?.detail);
+        console.error("Hint:", err?.hint);
+        console.error("Position:", err?.position);
+        console.error("Internal Query:", err?.internalQuery);
+        console.error("Where:", err?.where);
         console.error("Full Error:", err);
         throw err;
       }

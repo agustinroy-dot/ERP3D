@@ -29,6 +29,10 @@ export const getDb = cache(() => {
       // by setting a short idle timeout if necessary, but maxUses: 1
       // was causing constant reconnects and "Failed query" timeouts.
     });
+
+    globalDb.dbPool.on("error", (err) => {
+      console.error("🔥 Postgres Pool Error (Hyperdrive connection failed):", err.message, err.stack);
+    });
   }
 
   return drizzle({ client: globalDb.dbPool, schema, logger: true });

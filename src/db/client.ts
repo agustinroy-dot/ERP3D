@@ -38,6 +38,27 @@ export const getDb = cache(() => {
     globalDb.dbPool.on("error", (err) => {
       console.error("🔥 Postgres Pool Error (Hyperdrive connection failed):", err.message, err.stack);
     });
+
+    // Monkey-patch the query method to log the exact pg error before Drizzle hides it
+    const originalQuery = globalDb.dbPool.query.bind(globalDb.dbPool);
+    // @ts-ignore
+    globalDb.dbPool.query = async (...args) => {
+      try {
+        // @ts-ignore
+        return await originalQuery(...args);
+      } catch (err: any) {
+        console.error("🔥 RAW PG ERROR DETAILS 🔥");
+        console.error("Message:", err.message);
+        console.error("Code:", err.code);
+        console.error("Detail:", err.detail);
+        console.error("Hint:", err.hint);
+        console.error("Position:", err.position);
+        console.error("Internal Query:", err.internalQuery);
+        console.error("Where:", err.where);
+        console.error("Full Error:", err);
+        throw err;
+      }
+    };
   }
 
   // Intercept drizzle queries to catch raw pg driver errors

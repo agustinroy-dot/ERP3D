@@ -1,12 +1,13 @@
 "use client";
 
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createQuoteSchema } from "@/features/quotes/schemas";
+import { createQuoteAction } from "@/features/quotes/actions";
+import type { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createQuoteSchema } from "@/features/quotes/schemas";
-import { z } from "zod";
-import { createQuoteAction } from "@/features/quotes/actions";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus } from "lucide-react";
+import { Plus, Trash2, Calculator } from "lucide-react";
 
 export default function NewQuotePage() {
   const router = useRouter();
@@ -36,11 +37,13 @@ export default function NewQuotePage() {
           technology: "",
           color: "",
           materialId: "",
-          quantity: 1 as unknown as number,
-          estimatedMinutes: 0 as unknown as number,
-          costEstimated: 0 as unknown as number,
-          priceFinal: 0 as unknown as number,
-        } as unknown as z.input<typeof createQuoteSchema>["items"][0]
+          quantity: 1,
+          estimatedMinutes: 0,
+          priceFinal: 0,
+          costs: [
+             { type: "material", description: "", quantity: 1, unitCost: 0 }
+          ]
+        }
       ],
     },
   });
@@ -68,7 +71,7 @@ export default function NewQuotePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">New Quotation</h1>
-        <p className="mt-1 text-sm text-zinc-600">Create a multi-item estimate.</p>
+        <p className="mt-1 text-sm text-zinc-600">Create a quote with advanced cost structure.</p>
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm backdrop-blur-xl">
@@ -139,13 +142,13 @@ export default function NewQuotePage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append({ name: "", technology: "", color: "", materialId: "", quantity: 1 as unknown as number, estimatedMinutes: 0 as unknown as number, costEstimated: 0 as unknown as number, priceFinal: 0 as unknown as number } as unknown as z.input<typeof createQuoteSchema>["items"][0])}
+                  onClick={() => append({ name: "", technology: "", color: "", materialId: "", quantity: 1, estimatedMinutes: 0, priceFinal: 0, costs: [{ type: "material", description: "", quantity: 1, unitCost: 0 }] })}
                 >
                   <Plus className="mr-2 h-4 w-4" /> Add Item
                 </Button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {fields.map((field, index) => (
                   <div key={field.id} className="relative rounded-lg border border-zinc-200 bg-white/50 p-4 shadow-sm group">
                     <Button
@@ -188,20 +191,12 @@ export default function NewQuotePage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.color`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Color</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Black" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    {/* Nested Cost Components List */}
+                    <div className="mt-4 mb-6 bg-zinc-50/50 p-4 rounded-md border border-zinc-100">
+                        <QuoteItemCostFields form={form} itemIndex={index} />
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-zinc-100">
                       <FormField
                         control={form.control}
                         name={`items.${index}.quantity`}
@@ -217,36 +212,10 @@ export default function NewQuotePage() {
                       />
                       <FormField
                         control={form.control}
-                        name={`items.${index}.estimatedMinutes`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Est. Mins</FormLabel>
-                            <FormControl>
-                              <Input type="number" min="0" {...field} value={field.value as string | number} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.costEstimated`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Est. Cost *</FormLabel>
-                            <FormControl>
-                              <Input type="number" min="0" step="0.01" {...field} value={field.value as string | number} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
                         name={`items.${index}.priceFinal`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Final Price *</FormLabel>
+                            <FormLabel>Final Price (Per Item) *</FormLabel>
                             <FormControl>
                               <Input type="number" min="0" step="0.01" {...field} value={field.value as string | number} />
                             </FormControl>
@@ -272,6 +241,96 @@ export default function NewQuotePage() {
             </div>
           </form>
         </Form>
+      </div>
+    </div>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function QuoteItemCostFields({ form, itemIndex }: { form: any, itemIndex: number }) {
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: `items.${itemIndex}.costs`
+  });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+         <h4 className="text-sm font-medium text-zinc-700 flex items-center gap-2">
+           <Calculator className="h-4 w-4" /> Cost Components
+         </h4>
+         <Button
+           type="button"
+           variant="ghost"
+           size="sm"
+           onClick={() => append({ type: "labor", description: "", quantity: 1, unitCost: 0 })}
+         >
+           <Plus className="mr-1 h-3 w-3" /> Add Cost
+         </Button>
+      </div>
+
+      <div className="space-y-3">
+         {fields.map((field, idx) => (
+            <div key={field.id} className="flex gap-2 items-start">
+               <FormField
+                  control={form.control}
+                  name={`items.${itemIndex}.costs.${idx}.type`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input placeholder="Type (material, labor...)" {...field} className="h-8 text-xs" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`items.${itemIndex}.costs.${idx}.description`}
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input placeholder="Description" {...field} className="h-8 text-xs" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`items.${itemIndex}.costs.${idx}.quantity`}
+                  render={({ field }) => (
+                    <FormItem className="w-20">
+                      <FormControl>
+                        <Input type="number" step="0.01" min="0" placeholder="Qty" {...field} className="h-8 text-xs" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`items.${itemIndex}.costs.${idx}.unitCost`}
+                  render={({ field }) => (
+                    <FormItem className="w-24">
+                      <FormControl>
+                        <Input type="number" step="0.01" min="0" placeholder="Unit Cost" {...field} className="h-8 text-xs" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-400 hover:text-red-500"
+                  onClick={() => remove(idx)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
+         ))}
       </div>
     </div>
   );

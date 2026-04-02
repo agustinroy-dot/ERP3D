@@ -7,6 +7,8 @@ import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { updateQuoteStatusAction } from "@/features/quotes/actions";
 import { can, type Role } from "@/lib/auth/permissions";
+import { Calculator } from "lucide-react";
+import { AttachmentsPanel } from "@/features/attachments/components/attachments-panel";
 
 export default async function QuoteDetailPage({ params }: { params: Promise<{ quoteId: string }> }) {
   const { quoteId } = await params;
@@ -74,51 +76,77 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ qu
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Convert to Order</Button>
             </form>
           )}
-          <Button variant="outline" asChild>
-            <a href={`/quotes/${quote.id}/pdf`} target="_blank">View PDF</a>
-          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-zinc-200 bg-zinc-50/50 flex justify-between items-center">
-            <h3 className="font-semibold text-zinc-900">Line Items</h3>
-            <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
-              {quote.status.toUpperCase()}
-            </span>
+        <div className="md:col-span-2 space-y-6">
+          <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-zinc-200 bg-zinc-50/50 flex justify-between items-center">
+              <h3 className="font-semibold text-zinc-900">Line Items</h3>
+              <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                {quote.status.toUpperCase()}
+              </span>
+            </div>
+
+            <div className="divide-y divide-zinc-200">
+                {items.map((item) => (
+                  <div key={item.id} className="p-4 flex flex-col gap-4">
+                     <div className="flex justify-between">
+                         <div>
+                            <h4 className="font-medium text-zinc-900">{item.name}</h4>
+                            <p className="text-sm text-zinc-500">{item.technology} {item.color ? `/ ${item.color}` : ''}</p>
+                         </div>
+                         <div className="text-right">
+                             <div className="text-sm text-zinc-500">{item.quantity} x ${Number(item.priceFinal).toFixed(2)}</div>
+                             <div className="font-medium text-zinc-900">${(Number(item.priceFinal) * item.quantity).toFixed(2)}</div>
+                         </div>
+                     </div>
+
+                     {item.costs && item.costs.length > 0 && (
+                         <div className="bg-zinc-50/80 rounded-md p-3 border border-zinc-100">
+                            <h5 className="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                               <Calculator className="h-3 w-3" /> Cost Breakdown
+                            </h5>
+                            <table className="w-full text-xs text-left">
+                                <thead className="text-zinc-500 border-b border-zinc-200/50">
+                                   <tr>
+                                      <th className="pb-1 font-medium">Type</th>
+                                      <th className="pb-1 font-medium">Desc</th>
+                                      <th className="pb-1 font-medium text-right">Qty</th>
+                                      <th className="pb-1 font-medium text-right">Unit</th>
+                                      <th className="pb-1 font-medium text-right">Total</th>
+                                   </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-200/50">
+                                   {item.costs.map((c: { id: string, type: string, description: string | null, quantity: string, unitCost: string, totalCost: string }) => (
+                                      <tr key={c.id}>
+                                         <td className="py-1 text-zinc-700 capitalize">{c.type}</td>
+                                         <td className="py-1 text-zinc-500">{c.description || '-'}</td>
+                                         <td className="py-1 text-zinc-700 text-right">{c.quantity}</td>
+                                         <td className="py-1 text-zinc-700 text-right">${Number(c.unitCost).toFixed(2)}</td>
+                                         <td className="py-1 text-zinc-700 text-right">${Number(c.totalCost).toFixed(2)}</td>
+                                      </tr>
+                                   ))}
+                                </tbody>
+                            </table>
+                         </div>
+                     )}
+                  </div>
+                ))}
+            </div>
+
+            <div className="bg-zinc-50 p-4 border-t border-zinc-200 flex justify-between items-center">
+              <span className="font-medium text-zinc-700">Total</span>
+              <span className="font-bold text-lg text-zinc-900">${Number(quote.total).toFixed(2)}</span>
+            </div>
           </div>
-          <table className="w-full text-sm text-left">
-            <thead className="bg-zinc-50 border-b border-zinc-200">
-              <tr>
-                <th className="px-4 py-3 font-medium text-zinc-500">Description</th>
-                <th className="px-4 py-3 font-medium text-zinc-500">Tech/Color</th>
-                <th className="px-4 py-3 font-medium text-zinc-500 text-right">Qty</th>
-                <th className="px-4 py-3 font-medium text-zinc-500 text-right">Price</th>
-                <th className="px-4 py-3 font-medium text-zinc-500 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-zinc-50/50">
-                  <td className="px-4 py-3 font-medium text-zinc-900">{item.name}</td>
-                  <td className="px-4 py-3 text-zinc-500">{item.technology} {item.color ? `/ ${item.color}` : ''}</td>
-                  <td className="px-4 py-3 text-right">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right">${Number(item.priceFinal).toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right font-medium">${(Number(item.priceFinal) * item.quantity).toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-zinc-50">
-              <tr>
-                <td colSpan={4} className="px-4 py-3 text-right font-medium text-zinc-700">Total</td>
-                <td className="px-4 py-3 text-right font-bold text-zinc-900">${Number(quote.total).toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
         </div>
 
         <div className="space-y-6">
+          <div className="h-[400px]">
+            <AttachmentsPanel entityType="quote" entityId={quote.id} />
+          </div>
           <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-zinc-900 mb-4">Summary</h2>
             <div className="space-y-3 text-sm">

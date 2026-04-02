@@ -3,7 +3,7 @@
 import { createQuoteSchema } from "./schemas";
 import { requireUser } from "@/lib/auth/session";
 import { getDb } from "@/db/client";
-import { orgMemberships, quotes, quoteItems } from "@/db/schema";
+import { orgMemberships, quotes, quoteItems, quoteItemCosts } from "@/db/schema";
 import { eq, max } from "drizzle-orm";
 import { can, type Role } from "@/lib/auth/permissions";
 import { writeActivity } from "@/services/activity/write-activity";
@@ -48,7 +48,16 @@ export async function createQuoteAction(raw: unknown) {
 
   for (const item of input.items) {
     subtotal += Number(item.priceFinal) * item.quantity;
-    estimatedCost += Number(item.costEstimated) * item.quantity;
+
+    // Support advanced costing if costs exist
+    if (item.costs && item.costs.length > 0) {
+      for (const cost of item.costs) {
+         estimatedCost += (Number(cost.unitCost) * Number(cost.quantity)) * item.quantity;
+      }
+    } else {
+       // fallback for old costEstimated mapping
+       estimatedCost += 0; // The old form used costEstimated, but we removed it. Assume 0 if no costs array
+    }
   }
 
   const margin = subtotal - estimatedCost;
@@ -69,20 +78,39 @@ export async function createQuoteAction(raw: unknown) {
     notes: input.notes || null,
   }).returning();
 
-  // Insert Items
-  const itemsToInsert = input.items.map(item => ({
-    quoteId: quote.id,
-    name: item.name,
-    technology: item.technology,
-    color: item.color || null,
-    materialId: item.materialId || null,
-    quantity: item.quantity,
-    estimatedMinutes: item.estimatedMinutes,
-    costEstimated: item.costEstimated.toString(),
-    priceFinal: item.priceFinal.toString(),
-  }));
+  // Insert Items and their costs
+  for (const item of input.items) {
+      let itemEstimatedCost = 0;
+      if (item.costs && item.costs.length > 0) {
+         for (const cost of item.costs) {
+            itemEstimatedCost += Number(cost.unitCost) * Number(cost.quantity);
+         }
+      }
 
-  await db.insert(quoteItems).values(itemsToInsert);
+      const [insertedItem] = await db.insert(quoteItems).values({
+        quoteId: quote.id,
+        name: item.name,
+        technology: item.technology,
+        color: item.color || null,
+        materialId: item.materialId || null,
+        quantity: item.quantity,
+        estimatedMinutes: item.estimatedMinutes,
+        costEstimated: itemEstimatedCost.toString(),
+        priceFinal: item.priceFinal.toString(),
+      }).returning();
+
+      if (item.costs && item.costs.length > 0) {
+         const costsToInsert = item.costs.map(c => ({
+            quoteItemId: insertedItem.id,
+            type: c.type,
+            description: c.description || null,
+            quantity: c.quantity.toString(),
+            unitCost: c.unitCost.toString(),
+            totalCost: (Number(c.quantity) * Number(c.unitCost)).toString()
+         }));
+         await db.insert(quoteItemCosts).values(costsToInsert);
+      }
+  }
 
   await writeActivity({
     orgId,
@@ -126,8 +154,7 @@ export async function convertQuoteToOrderAction(quoteId: string) {
 
   const db = getDb();
 
-  // Need to import order stuff here to avoid circular dep if any, or just use db
-  const { orders, orderItems } = await import("@/db/schema");
+  const { orders, orderItems, orderItemCosts } = await import("@/db/schema");
 
   const quoteResult = await db.query.quotes.findFirst({
     where: eq(quotes.id, quoteId)
@@ -154,17 +181,33 @@ export async function convertQuoteToOrderAction(quoteId: string) {
     notes: quoteResult.notes || null,
   }).returning();
 
-  const itemsToInsert = itemsResult.map(item => ({
-    orderId: order.id,
-    name: item.name,
-    technology: item.technology,
-    color: item.color || null,
-    materialId: item.materialId || null,
-    quantity: item.quantity,
-    unitPrice: item.priceFinal,
-  }));
+  for (const item of itemsResult) {
+      const [insertedOrderItem] = await db.insert(orderItems).values({
+          orderId: order.id,
+          name: item.name,
+          technology: item.technology,
+          color: item.color || null,
+          materialId: item.materialId || null,
+          quantity: item.quantity,
+          unitPrice: item.priceFinal,
+      }).returning();
 
-  await db.insert(orderItems).values(itemsToInsert);
+      const itemCosts = await db.query.quoteItemCosts.findMany({
+          where: eq(quoteItemCosts.quoteItemId, item.id)
+      });
+
+      if (itemCosts.length > 0) {
+          const orderItemCostsToInsert = itemCosts.map(c => ({
+              orderItemId: insertedOrderItem.id,
+              type: c.type,
+              description: c.description,
+              quantity: c.quantity,
+              unitCost: c.unitCost,
+              totalCost: c.totalCost
+          }));
+          await db.insert(orderItemCosts).values(orderItemCostsToInsert);
+      }
+  }
 
   await writeActivity({
     orgId,

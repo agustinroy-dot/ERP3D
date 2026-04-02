@@ -6,6 +6,7 @@ import { getCustomerById } from "@/features/crm/repo";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
+import { AttachmentsPanel } from "@/features/attachments/components/attachments-panel";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ customerId: string }> }) {
   const { customerId } = await params;
@@ -58,6 +59,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm">
            <h2 className="text-lg font-semibold text-zinc-900 mb-4">Activity History</h2>
            <ActivityTimeline entityType="customer" entityId={customer.id} />
+        </div>
+        <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm h-[400px]">
+           <AttachmentsPanel entityType="customer" entityId={customer.id} />
+        </div>
+        <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm h-[400px]">
+           <AttachmentsPanel entityType="customer" entityId={customer.id} />
         </div>
       </div>
     </div>

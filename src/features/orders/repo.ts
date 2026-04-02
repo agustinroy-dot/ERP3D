@@ -40,10 +40,25 @@ export async function getOrderDetail(orgId: string, orderId: string) {
 
   if (!orderData || orderData.length === 0) return null;
 
-  const items = await db
+  const rawItems = await db
     .select()
     .from(orderItems)
     .where(eq(orderItems.orderId, orderId));
+
+  const itemIds = rawItems.map(i => i.id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let allCosts: any[] = [];
+  if (itemIds.length > 0) {
+      const costsQuery = await db.query.orderItemCosts.findMany();
+      allCosts = costsQuery.filter(c => itemIds.includes(c.orderItemId));
+  }
+
+  const items = rawItems.map(item => {
+      return {
+          ...item,
+          costs: allCosts.filter(c => c.orderItemId === item.id)
+      };
+  });
 
   const paymentsData = await db
     .select()

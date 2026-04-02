@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Users, FileText, Settings, Package, Truck, Activity } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Settings, Package, Activity, ShoppingCart } from "lucide-react";
 
 export function Sidebar() {
   return (
@@ -24,21 +24,21 @@ export function Sidebar() {
           <Users className="h-4 w-4" />
           Customers
         </Link>
-        <Link href="/quotes" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors pointer-events-none opacity-50">
+        <Link href="/quotes" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors">
           <FileText className="h-4 w-4" />
           Quotes
         </Link>
-        <Link href="/inventory" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors pointer-events-none opacity-50">
+        <Link href="/orders" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors">
+          <ShoppingCart className="h-4 w-4" />
+          Orders
+        </Link>
+        <Link href="/inventory" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors">
           <Package className="h-4 w-4" />
           Inventory
         </Link>
         <Link href="/production" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors">
           <Activity className="h-4 w-4" />
           Production
-        </Link>
-        <Link href="/deliveries" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-white/80 hover:text-zinc-900 transition-colors pointer-events-none opacity-50">
-          <Truck className="h-4 w-4" />
-          Deliveries
         </Link>
       </nav>
 

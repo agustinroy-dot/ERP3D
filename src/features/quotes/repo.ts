@@ -39,10 +39,26 @@ export async function getQuoteDetail(orgId: string, quoteId: string) {
 
   if (!quoteData || quoteData.length === 0) return null;
 
-  const items = await db
+  const rawItems = await db
     .select()
     .from(quoteItems)
     .where(eq(quoteItems.quoteId, quoteId));
+
+  const itemIds = rawItems.map(i => i.id);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let allCosts: any[] = [];
+  if (itemIds.length > 0) {
+     const costsQuery = await db.query.quoteItemCosts.findMany();
+     allCosts = costsQuery.filter(c => itemIds.includes(c.quoteItemId));
+  }
+
+  const items = rawItems.map(item => {
+     return {
+        ...item,
+        costs: allCosts.filter(c => c.quoteItemId === item.id)
+     };
+  });
 
   return { ...quoteData[0], items };
 }

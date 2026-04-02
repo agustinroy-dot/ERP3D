@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { activityEvents, orders, workOrders, materials, profiles, quotes, leads, customers, payments, orderItems } from "@/db/schema";
 
@@ -8,12 +8,12 @@ export async function getDashboardKPIs(orgId: string) {
   // Active Orders (pending, approved, in_production, qc, ready_for_delivery)
   const activeOrdersCount = await db.select({ count: sql<number>`count(*)` })
     .from(orders)
-    .where(and(eq(orders.orgId, orgId), eq(orders.status, "in_production")));
+    .where(and(eq(orders.orgId, orgId), inArray(orders.status, ["pending", "approved", "in_production", "qc", "ready_for_delivery"])));
 
   // Work orders in progress (printing, assigned, postprocess)
   const workOrdersCount = await db.select({ count: sql<number>`count(*)` })
     .from(workOrders)
-    .where(and(eq(workOrders.orgId, orgId), eq(workOrders.status, "printing")));
+    .where(and(eq(workOrders.orgId, orgId), inArray(workOrders.status, ["printing", "assigned", "postprocess", "qc"])));
 
   // Critical stock (materials where onHand <= minQty)
   const criticalStockCount = await db.select({ count: sql<number>`count(*)` })
@@ -23,7 +23,7 @@ export async function getDashboardKPIs(orgId: string) {
   // Pending Quotes
   const pendingQuotesCount = await db.select({ count: sql<number>`count(*)` })
     .from(quotes)
-    .where(and(eq(quotes.orgId, orgId), eq(quotes.status, "sent")));
+    .where(and(eq(quotes.orgId, orgId), inArray(quotes.status, ["draft", "sent"])));
 
   // New Leads
   const newLeadsCount = await db.select({ count: sql<number>`count(*)` })

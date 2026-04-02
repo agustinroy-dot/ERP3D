@@ -9,6 +9,7 @@ import { WorkOrderQuickActions } from "@/features/production/components/quick-ac
 import Link from "next/link";
 import { UserCircle, Printer, Box, AlertTriangle, Clock } from "lucide-react";
 import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
+import { AttachmentsPanel } from "@/features/attachments/components/attachments-panel";
 
 export default async function JobCardPage({ params }: { params: Promise<{ workOrderId: string }> }) {
   const { workOrderId } = await params;
@@ -153,9 +154,8 @@ export default async function JobCardPage({ params }: { params: Promise<{ workOr
         <div className="space-y-6">
 
           {/* F. Attachments Placeholder */}
-          <div className="rounded-xl border border-white/40 bg-white/60 p-6 shadow-sm">
-             <h2 className="text-sm font-semibold text-zinc-900 mb-4">Files & References</h2>
-             <p className="text-xs text-zinc-500 italic">Attachments module coming next.</p>
+          <div className="h-[400px]">
+            <AttachmentsPanel entityType="work_order" entityId={workOrder.id} />
           </div>
 
           {/* G. Activity Timeline */}

@@ -6,7 +6,7 @@ import { listCustomers } from "@/features/crm/repo";
 import { customers as customersSchema } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -49,12 +49,10 @@ export default async function CustomersPage() {
           <p className="mt-1 text-sm text-zinc-600">Manage your company clients and individuals.</p>
         </div>
         {canCreate && (
-          <Button asChild>
-            <Link href="/crm/customers/new">
+          <Link href="/crm/customers/new" className={buttonVariants({ variant: "default" })}>
               <Plus className="mr-2 h-4 w-4" />
               New Customer
             </Link>
-          </Button>
         )}
       </div>
 

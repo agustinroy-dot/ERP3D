@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { can, type Role } from "@/lib/auth/permissions";
 import { getPrinters } from "@/features/printers/repo";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Plus, Printer } from "lucide-react";
 import Link from "next/link";
 
@@ -28,9 +28,7 @@ export default async function PrintersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Printers & Equipment</h1>
         {canCreate && (
-          <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Link href="/printers/new"><Plus className="h-4 w-4 mr-2" /> New Printer</Link>
-          </Button>
+          <Link href="/printers/new" className={buttonVariants({ variant: "default", className: "bg-blue-600 hover:bg-blue-700 text-white" })}><Plus className="h-4 w-4 mr-2" /> New Printer</Link>
         )}
       </div>
 

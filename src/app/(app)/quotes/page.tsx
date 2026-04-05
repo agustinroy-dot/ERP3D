@@ -4,7 +4,7 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { listQuotes } from "@/features/quotes/repo";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -56,12 +56,10 @@ export default async function QuotesPage() {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Quotations</h1>
           <p className="mt-1 text-sm text-zinc-600">Create and manage client quotations.</p>
         </div>
-        <Button asChild>
-          <Link href="/quotes/new">
+        <Link href="/quotes/new" className={buttonVariants({ variant: "default" })}>
             <Plus className="mr-2 h-4 w-4" />
             New Quote
           </Link>
-        </Button>
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">

@@ -9,8 +9,11 @@ export async function getActivityForEntity(orgId: string, entityType: string, en
   let relatedConditions = undefined;
   if (entityType === "customer") {
     const { orders, quotes } = await import("@/db/schema");
-    const ordersList = await db.select({ id: orders.id }).from(orders).where(eq(orders.customerId, entityId));
-    const quotesList = await db.select({ id: quotes.id }).from(quotes).where(eq(quotes.customerId, entityId));
+
+    const [ordersList, quotesList] = await Promise.all([
+      db.select({ id: orders.id }).from(orders).where(eq(orders.customerId, entityId)),
+      db.select({ id: quotes.id }).from(quotes).where(eq(quotes.customerId, entityId))
+    ]);
 
     const relatedIds = [...ordersList.map(o => o.id), ...quotesList.map(q => q.id)];
 

@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { can, type Role } from "@/lib/auth/permissions";
 import { getPrinters } from "@/features/printers/repo";
 import { notFound } from "next/navigation";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Plus, Printer } from "lucide-react";
 import Link from "next/link";
 

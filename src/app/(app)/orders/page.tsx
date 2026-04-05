@@ -4,7 +4,7 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { listOrders } from "@/features/orders/repo";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -58,12 +58,10 @@ export default async function OrdersPage() {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Orders</h1>
           <p className="mt-1 text-sm text-zinc-600">Track and manage client orders.</p>
         </div>
-        <Button asChild>
-          <Link href="/orders/new">
+        <Link href="/orders/new" className={buttonVariants({ variant: "default" })}>
             <Plus className="mr-2 h-4 w-4" />
             New Order
           </Link>
-        </Button>
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">

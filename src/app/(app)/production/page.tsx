@@ -4,7 +4,7 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { listWorkOrders } from "@/features/production/repo";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -61,12 +61,10 @@ export default async function ProductionPage() {
           <p className="mt-1 text-sm text-zinc-600">Workshop job control panel grouped by printer/assignment.</p>
         </div>
         {canCreate && (
-          <Button asChild>
-            <Link href="/production/work-orders/new">
+          <Link href="/production/work-orders/new" className={buttonVariants({ variant: "default" })}>
               <Plus className="mr-2 h-4 w-4" />
               New Work Order
             </Link>
-          </Button>
         )}
       </div>
 

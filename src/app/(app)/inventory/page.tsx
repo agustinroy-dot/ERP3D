@@ -4,7 +4,7 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { listMaterials } from "@/features/inventory/repo";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -41,12 +41,10 @@ export default async function InventoryPage() {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Inventory</h1>
           <p className="mt-1 text-sm text-zinc-600">Track and adjust materials and components.</p>
         </div>
-        <Button asChild>
-          <Link href="/inventory/new">
+        <Link href="/inventory/new" className={buttonVariants({ variant: "default" })}>
             <Plus className="mr-2 h-4 w-4" />
             New Material
           </Link>
-        </Button>
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">

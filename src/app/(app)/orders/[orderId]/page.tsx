@@ -4,7 +4,7 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getOrderDetail } from "@/features/orders/repo";
 import { notFound, redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { updateOrderStatusAction } from "@/features/orders/actions";
 import { RecordPaymentDialog } from "@/features/payments/components/record-payment-dialog";
 import { AttachmentsPanel } from "@/features/attachments/components/attachments-panel";
@@ -60,17 +60,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
             </form>
           )}
           {can(role, "production:write") && order.status === 'approved' && (
-            <Button asChild>
-              <a href={`/production/work-orders/new?orderId=${order.id}`}>Create Work Order</a>
-            </Button>
+            <a href={`/production/work-orders/new?orderId=${order.id}`} className={buttonVariants({ variant: "default" })}>Create Work Order</a>
           )}
           {can(role, "deliveries:write") && !delivery && (
             <CreateDeliveryDialog orderId={order.id} />
           )}
           {can(role, "deliveries:read") && delivery && (
-            <Button asChild variant="outline" className="text-zinc-700">
-              <a href={`/deliveries/${delivery.id}`}><Truck className="h-4 w-4 mr-2" /> View Delivery</a>
-            </Button>
+            <a href={`/deliveries/${delivery.id}`} className={buttonVariants({ variant: "outline", className: "text-zinc-700" })}><Truck className="h-4 w-4 mr-2" /> View Delivery</a>
           )}
         </div>
       </div>

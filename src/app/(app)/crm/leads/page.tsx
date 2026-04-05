@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { listLeads } from "@/features/crm/repo";
 import type { InferSelectModel } from "drizzle-orm";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -42,12 +42,10 @@ export default async function LeadsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Leads</h1>
           <p className="mt-1 text-sm text-zinc-600">Manage potential customers and inquiries.</p>
         </div>
-        <Button asChild>
-          <Link href="/crm/leads/new">
+        <Link href="/crm/leads/new" className={buttonVariants({ variant: "default" })}>
             <Plus className="mr-2 h-4 w-4" />
             New Lead
           </Link>
-        </Button>
       </div>
 
       <div className="rounded-xl border border-white/40 bg-white/60 shadow-sm overflow-hidden">

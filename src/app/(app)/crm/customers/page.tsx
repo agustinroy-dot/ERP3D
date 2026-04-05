@@ -6,7 +6,8 @@ import { listCustomers } from "@/features/crm/repo";
 import { customers as customersSchema } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Table,
   TableBody,

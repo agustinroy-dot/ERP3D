@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { listLeads } from "@/features/crm/repo";
 import type { InferSelectModel } from "drizzle-orm";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Table,
   TableBody,

@@ -4,7 +4,8 @@ import { orgMemberships } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { listQuotes } from "@/features/quotes/repo";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Table,
   TableBody,
